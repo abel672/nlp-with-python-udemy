@@ -1,0 +1,4 @@
+Install spacy:
+conda install -c conda-forge spacy
+
+python -m spacy download en
