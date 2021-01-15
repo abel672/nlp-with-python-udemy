@@ -127,6 +127,89 @@ lr_model = LogisticRegression(solver='lbfgs')
 lr_model.fit(X_train, y_train) # once we run this, our model is ready to predict data
 
 
+
+# %%
+##### PART 2. Test the accuracy of the model, using the data set
+from sklearn import metrics
+
+
+# %%
+predictions = lr_model.predict(X_test)
+
+
+# %%
+predictions # predictions of my model
+
+
+# %%
+y_test # true values
+
+
+# %%
+# test predictions and true values in a confusion matrix
+print(metrics.confusion_matrix(y_test, predictions))
+
+
+# %%
+# you can make the confusion matrix simpler by adding labels
+df = pd.DataFrame(metrics.confusion_matrix(y_test, predictions), index=['ham', 'spam'], columns=['ham', 'spam'])
+
+
+# %%
+df # confusion matrix data frame
+
+
+# %%
+# clasification report with the same data
+print(metrics.classification_report(y_test, predictions)) 
+# The model is good predicting 'ham' but not very good predicting 'spam' messages
+
+
+# %%
+# accuracy of my model
+print(metrics.accuracy_score(y_test, predictions))
+
+# %% [markdown]
+# ### Creating another model
+
+# %%
+# Same steps as the previous model
+from sklearn.naive_bayes import MultinomialNB
+
+nb_model = MultinomialNB() # create model
+
+nb_model.fit(X_train, y_train) #t rain model
+
+# Test model part
+predictions = nb_model.predict(X_test) # make a prediction with it
+
+print(metrics.confusion_matrix(y_test, predictions)) # test the results
+
+
+# %%
+print(metrics.classification_report(y_test, predictions)) # this model can not predict any 'spam' at all
+
+# %% [markdown]
+# ### Creating another model
+
+# %%
+from sklearn.svm import SVC
+
+
+# %%
+svc_model = SVC(gamma='auto')
+
+svc_model.fit(X_train, y_train)
+
+predictions = svc_model.predict(X_test)
+
+print(metrics.confusion_matrix(y_test, predictions))
+
+
+# %%
+print(metrics.classification_report(y_test, predictions))
+
+
 # %%
 
 
