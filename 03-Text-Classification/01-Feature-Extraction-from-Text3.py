@@ -51,7 +51,7 @@ count_vect = CountVectorizer() # this module allows us to do all the transformat
 
 
 # %%
-X # we sill pass this to the count vectorizer and transform it.
+X # we will pass this to the count vectorizer and transform it.
 
 # %% [markdown]
 # ### Two steps to transform with the Count Vectorizer
@@ -81,6 +81,98 @@ X_train.shape
 # %%
 # we have the messages and the vocab count (see last step in 01-Feature-Extraction-from-Text2.ipynb)
 X_train_counts.shape 
+
+
+# %%
+# Part 2: Tfid Transformation and Clasification
+from sklearn.feature_extraction.text import TfidfTransformer
+
+
+# %%
+tfidf_transformer = TfidfTransformer()
+
+
+# %%
+X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
+
+
+# %%
+X_train_tfidf.shape # not just counter: term frequency * inverse document's frequency
+
+
+# %%
+# Counter Vectorization and Tfid Transformation into one step
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+
+# %%
+vectorizer = TfidfVectorizer()
+
+
+# %%
+X_train_tfidf = vectorizer.fit_transform(X_train)
+
+
+# %%
+# Step 3. Clasification: train a clasifier
+from sklearn.svm import LinearSVC
+
+
+# %%
+clf = LinearSVC()
+
+
+# %%
+clf.fit(X_train_tfidf, y_train) # our traininig set has been vectorized into a full vocabulary
+
+# %% [markdown]
+# ### To perform an analysis in our test set, we have to do all the same procedures as the training set
+
+# %%
+# Perform Vectozization, Tfid Transformation and Clasification in one single pipeline
+from sklearn.pipeline import Pipeline
+
+
+# %%
+# pipeline with Vectorization, Tfid Transformation and Clasification
+text_clf = Pipeline([('tfidf', TfidfVectorizer()), ('clf', LinearSVC())]) 
+
+
+# %%
+text_clf.fit(X_train, y_train)
+
+
+# %%
+predictions = text_clf.predict(X_test) # creating our model with all the training data
+
+
+# %%
+from sklearn.metrics import confusion_matrix, classification_report
+
+
+# %%
+print(confusion_matrix(y_test, predictions)) # very good results
+
+
+# %%
+print(classification_report(y_test, predictions)) # very good results
+
+
+# %%
+from sklearn import metrics
+
+
+# %%
+metrics.accuracy_score(y_test, predictions) # 99% score
+
+
+# %%
+# using our successed model to predict another message
+text_clf.predict(["Congratinations! You've been selected as a winner. TEXT WON to 44255 congratulations free entry to contest."])
+
+
+# %%
+text_clf.predict(["Dear Marty, how are you?. We are going to do ski this weekend. Would you like to join us?"])
 
 
 # %%
