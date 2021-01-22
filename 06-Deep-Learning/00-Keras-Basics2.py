@@ -125,6 +125,70 @@ model.summary()
 # %%
 model.fit(scaled_X_train, y_train, epochs=150, verbose=2) # train our model with our scale data
 
+# part 2: Predictions with our models
+# %%
+model.predict_classes(scaled_X_test)
+
+
+# %%
+model.predict(scaled_X_test)
+
+
+# %%
+predictions = model.predict_classes(scaled_X_test)
+
+
+# %%
+y_test.argmax(axis=1) # adapt y_test to the scaled predictions format
+
+
+# %%
+predictions
+
+
+# %%
+# now we just compared them
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+
+
+# %%
+confusion_matrix(y_test.argmax(axis=1), predictions)
+
+
+# %%
+print(classification_report(y_test.argmax(axis=1), predictions))
+
+
+# %%
+accuracy_score(y_test.argmax(axis=1), predictions)
+
+
+# %%
+# save our model
+model.save('myfirstmodel.h5')
+
+
+# %%
+# load our model
+from keras.models import load_model
+
+
+# %%
+new_model = load_model('myfirstmodel.h5')
+
+
+# %%
+# after loading it, we can use it as before
+predictions2 = new_model.predict_classes(scaled_X_test)
+
+
+# %%
+predictions2
+
+
+# %%
+predictions
+
 
 # %%
 
