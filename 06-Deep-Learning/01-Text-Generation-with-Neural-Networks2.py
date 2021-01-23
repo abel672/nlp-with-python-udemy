@@ -223,6 +223,90 @@ dump(tokenizer,open('my_simpletokenizer','wb')) # saving our token
 
 
 # %%
+# part 3: Generate the next sequence of words by predictions
+from keras.preprocessing.sequence import pad_sequences
+
+
+# %%
+def generate_text(model, tokenizer, seq_len, seed_text, num_gen_words):
+
+    output_text = []
+
+    input_text = seed_text
+
+    for i in range(num_gen_words):
+
+        # take input text and encode it to be a sequence
+        encoded_text = tokenizer.texts_to_sequences([input_text])[0] 
+
+        # pad the text: in case that is too long or too short, we adapt it   
+        pad_encoded = pad_sequences([encoded_text], maxlen=seq_len, truncating='pre')
+
+        #  predict the class probabilities for each word
+        # this method will throw the entire vocabulary and asign a probability to the most likely next word
+        pred_word_ind = model.predict_classes(pad_encoded, verbose=0)[0]
+  
+        # get the actual matched word
+        pred_word = tokenizer.index_word[pred_word_ind]
+
+        # add the predicted word in the original input text
+        input_text += ' '+pred_word
+
+        # adding the predicted word into the list
+        output_text.append(pred_word)
+    
+    # return all the predicted words
+    return ' '.join(output_text)
+
+
+# %%
+# text_sequences[0]
+
+
+# %%
+import random
+random.seed(101)
+random_pick = random.randint(0, len(text_sequences))
+
+
+# %%
+random_seed_text = text_sequences[random_pick]
+
+
+# %%
+random_seed_text
+
+
+# %%
+seed_text = ' '.join(random_seed_text)
+
+
+# %%
+seed_text
+
+
+# %%
+generate_text(model, tokenizer, seq_len, seed_text, num_gen_words=25)
+
+
+# %%
+# load example model with 60% accuracy
+from keras.models import load_model
+
+
+# %%
+model = load_model('epochBIG.h5')
+
+
+# %%
+tokenizer = load(open('epochBIG', 'rb'))
+
+
+# %%
+generate_text(model, tokenizer, seq_len, seed_text, num_gen_words=25)
+
+
+# %%
 
 
 
