@@ -229,6 +229,137 @@ sum(answers_test)[13]
 
 
 # %%
+# part 3: Build the Neural Network
+    # Input Encoder M
+    # Input Encoder C
+    # Question Encoder
+# Complete the Network
+
+
+# %%
+from keras.models import Sequential,Model
+
+
+# %%
+from keras.layers.embeddings import Embedding
+
+
+# %%
+from keras.layers import Input,Activation,Dense,Permute,Dropout,add,dot,concatenate,LSTM
+
+
+# %%
+# PLACEHOLDERS shape=(max_story_len, batch_size): They will receive input later based on stories and questinos
+# We will pass this to our encoders
+input_sequence = Input((max_story_len,))
+question = Input((max_question_len,))
+
+
+# %%
+# Create input encoders
+# 1. Define vocabulary size (voca_len)
+vocab_size = len(vocab) + 1
+
+
+# %%
+# INPUT ENCODER M: Get embedded to a sequence of vectors
+input_encoder_m = Sequential()
+input_encoder_m.add(Embedding(input_dim=vocab_size, output_dim=64))
+# when bigger is the value, longer is the training
+input_encoder_m.add(Dropout(0.5)) # 50% of the neurons will be turned off, that helps with over feeding
+
+# OUTPUT
+# (samples, story_maxlen, embedding_dim)
+
+
+# %%
+# INPUT ENCODER C
+input_encoder_c = Sequential()
+input_encoder_c.add(Embedding(input_dim=vocab_size, output_dim=max_question_len))
+input_encoder_c.add(Dropout(0.5))
+
+# OUTPUT
+# (samples, story_maxlen, max_question_len)
+
+
+# %%
+# QUESTION ENCODER
+question_encoder = Sequential()
+question_encoder.add(Embedding(input_dim=vocab_size,output_dim=64,input_length=max_question_len))
+question_encoder.add(Dropout(0.3))
+
+# OUTPUT
+# (samples, query_maxlen, embedding_dim)
+
+
+# %%
+#  ENCODED <--- ENCODER(INPUT)
+input_encoded_m = input_encoder_m(input_sequence)
+input_encoded_c = input_encoder_c(input_sequence)
+question_encoded = question_encoder(question)
+
+
+# %%
+# Use a dot product to compute the match between the first input vector sequence and the query
+
+
+# %%
+# dot product computed match for the first input vector sequence and the query
+match = dot([input_encoded_m, question_encoded], axes=(2,2))
+match = Activation('softmax')(match)
+
+
+# %%
+# add this match matrix with the second input vector sequence
+response = add([match, input_encoded_c])
+response = Permute((2,1))(response) # to have an output of examples by querie max len, by story max len
+
+
+# %%
+# concatenate match matrix with the question vector sequence (Concatenate response with question)
+answer = concatenate([response, question_encoded])
+
+
+# %%
+answer # The None is the batch_size that we did not define yet
+
+
+# %%
+# BUILD OUR MODEL: Reduce our answer with our current Neural Network
+
+
+# %%
+answer = LSTM(32)(answer)
+
+
+# %%
+answer = Dropout(0.5)(answer)
+# this outputs something in the form of samples by the vocab size 
+# we should only see a marking for YES or NO, everything else is just a bunch of 0.
+# Just as we did when we vectorized the answers
+answer = Dense(vocab_size)(answer) # (samples, vocab_size) # YES/NO 0000
+
+
+# %%
+# output the probability distribution over the vocabulary
+# turn YES and NO into 0 and 1
+answer = Activation('softmax')(answer)
+
+
+# %%
+# build the final model: Passing the PLACEHOLDERS
+model = Model([input_sequence, question], answer)
+
+
+# %%
+model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['accuracy'])
+
+
+# %%
+model.summary()
+
+
+# %%
 
 
 
