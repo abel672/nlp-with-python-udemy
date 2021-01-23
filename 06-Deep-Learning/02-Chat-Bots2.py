@@ -116,6 +116,119 @@ max_question_len
 
 
 # %%
+# part 2: Vectorizing stories
+from keras.preprocessing.sequence import pad_sequences
+from keras.preprocessing.text import Tokenizer
+
+
+# %%
+tokenizer = Tokenizer(filters=[])
+tokenizer.fit_on_texts(vocab)
+
+
+# %%
+tokenizer.word_index
+
+
+# %%
+# tokenization for stories, questions and answers
+train_story_text = []
+train_question_text = []
+train_answers = []
+
+
+# %%
+# separate each of them
+for story, question, answer in train_data:
+    train_story_text.append(story)
+    train_question_text.append(question)
+    train_answers.append(answer)
+
+
+# %%
+# turning each text's word into its matching word sequence (check tokenizer.word_index)
+train_story_seq = tokenizer.texts_to_sequences(train_story_text)
+
+
+# %%
+len(train_story_seq)
+
+
+# %%
+len(train_story_text)
+
+
+# %%
+train_story_seq # story vector
+
+
+# %%
+# create method to vectorize stories, questions and answers (same steps as before)
+def vectorize_stories(data, word_index=tokenizer.word_index, max_story_len=max_story_len, max_question_len=max_question_len):
+    
+    # STORIES = X
+    X = []
+    # QUESTIONS Xq
+    Xq = []
+    # Y CORRECT ANSWER (yes/no)
+    Y = []
+    
+    for story, query, answer in data:
+        
+        # for each story
+        # [23, 14, ...]
+        x = [word_index[word.lower()] for word in story]
+        xq = [word_index[word.lower()] for word in query]
+        
+        y = np.zeros(len(word_index)+1)
+        
+        y[word_index[answer]] = 1
+        
+        X.append(x)
+        Xq.append(xq)
+        Y.append(y)
+    
+    return (pad_sequences(X, maxlen=max_story_len), pad_sequences(Xq, maxlen=max_question_len), np.array(Y))
+
+
+# %%
+# now we have our data formatted (Vectorized) and we can use it to create our models
+inputs_train, queries_train, answers_train = vectorize_stories(train_data)
+
+
+# %%
+inputs_test, queries_tests, answers_test = vectorize_stories(test_data)
+
+
+# %%
+inputs_test
+
+
+# %%
+answers_test
+
+
+# %%
+tokenizer.word_index['yes'] # position of the answer yes
+
+
+# %%
+tokenizer.word_index['no'] # position of the answer no
+
+
+# %%
+sum(answers_test) # here you can see the two previous indexes
+
+
+# %%
+sum(answers_test)[7]
+
+
+# %%
+sum(answers_test)[13]
+
+
+# %%
 
 
 
