@@ -1,6 +1,9 @@
 # To add a new cell, type '# %%'
 # To add a new markdown cell, type '# %% [markdown]'
 # %%
+from IPython import get_ipython
+
+# %%
 import pickle
 import numpy as np
 
@@ -62,6 +65,8 @@ len(all_data)
 # %%
 set(train_data[0][0]) # turn list into a set
 
+# %% [markdown]
+# ## Setting up Vocabulary of all words
 
 # %%
 vocab = set()
@@ -105,6 +110,10 @@ max_story_len = max(all_story_lens) # get the max length
 
 
 # %%
+max_story_len
+
+
+# %%
 # LONGEST QUESTION
 # get max question length too
 all_question_lens = [len(data[1]) for data in all_data]
@@ -114,6 +123,8 @@ max_question_len = max(all_question_lens)
 # %%
 max_question_len
 
+# %% [markdown]
+# ## Vectorizing the Data
 
 # %%
 # part 2: Vectorizing stories
@@ -142,7 +153,7 @@ train_answers = []
 for story, question, answer in train_data:
     train_story_text.append(story)
     train_question_text.append(question)
-    train_answers.append(answer)
+#     train_answers.append(answer)
 
 
 # %%
@@ -197,7 +208,7 @@ inputs_train, queries_train, answers_train = vectorize_stories(train_data)
 
 
 # %%
-inputs_test, queries_tests, answers_test = vectorize_stories(test_data)
+inputs_test, queries_test, answers_test = vectorize_stories(test_data)
 
 
 # %%
@@ -357,6 +368,165 @@ model.compile(optimizer='rmsprop', loss='categorical_crossentropy', metrics=['ac
 
 # %%
 model.summary()
+
+
+# %%
+# Part 4: Fit/Train the network (the model)
+
+
+# %%
+history = model.fit(
+    [inputs_train, queries_train],
+    answers_train,
+    batch_size=32, # smaller batch sizes with longer trained epochs slightly get better results
+    epochs=10, validation_data=([inputs_test, queries_test], answers_test))
+
+
+# %%
+# Plotting out our training history
+
+
+# %%
+import matplotlib.pyplot as plt
+get_ipython().run_line_magic('matplotlib', 'inline')
+print(history.history.keys())
+
+
+# %%
+# summarize history for accuracy
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('model accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('epoch')
+plt.legend(['train', 'test'], loc='upper left')
+plt.show()
+
+
+# %%
+# save this model
+# model.save('mybrandnewmodel.h5')
+
+
+# %%
+# load model
+model.load_weights('chatbot_10.h5')
+
+
+# %%
+pred_results = model.predict(([inputs_test, queries_test]))
+
+
+# %%
+test_data[0][0]
+
+
+# %%
+test_data[0][1]
+
+
+# %%
+test_data[0][2]
+
+
+# %%
+pred_results.shape # ([stories, questions, answer], vocab_words+1)
+
+
+# %%
+pred_results[0] # probability of every single vocab word
+
+
+# %%
+# get the max probability
+val_max = np.argmax(pred_results[0])
+
+
+# %%
+# tokenizer.word_index
+# np.argmax(pred_results[0])
+
+
+# %%
+# take the word from our vocabulary
+for key, val in tokenizer.word_index.items():
+    if val == val_max:
+        k = key
+
+
+# %%
+k # this should be 'no', there is a mistake somewhere...
+
+
+# %%
+pred_results[0][val_max] 
+
+# %% [markdown]
+# ## Test our model
+
+# %%
+# This is our the vocabulary that our model knows, we can only use these words to ask questions to the model.
+vocab
+
+
+# %%
+# Creating stories
+my_story = "John left the kitchen . Sandra dropped the football in the garden ."
+
+
+# %%
+my_story.split()
+
+
+# %%
+my_question = "Is the football in the garden ?"
+
+
+# %%
+my_question.split()
+
+
+# %%
+mydata = [(my_story.split(), my_question.split(), 'yes')]
+
+
+# %%
+mydata
+
+
+# %%
+# vectorize data
+my_story, my_ques, my_ans = vectorize_stories(mydata)
+
+
+# %%
+# my_story
+# my_ques
+# my_ans
+
+
+# %%
+# predict data with the model
+pred_results = model.predict(([my_story, my_ques]))
+
+
+# %%
+# get the max value of the predicted results
+val_max = np.argmax(pred_results[0])
+
+
+# %%
+for key, val in tokenizer.word_index.items():
+    if val == val_max:
+        k = key
+
+
+# %%
+k # this should be yes, there is a mistake somewhere...
+
+
+# %%
+pred_results[0][val_max]
 
 
 # %%
