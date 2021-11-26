@@ -63,7 +63,8 @@ for word in nlp.vocab:
 # sorting by similarity
 computed_similarities = sorted(computed_similarities, key=lambda item:-item[1])
 
-[t[0].text for t in computed_similarities[:10]]
+ten_closest_words = [t[0].text for t in computed_similarities[:10]]
+print(ten_closest_words)
 
 # %% [markdown]
 # #### CHALLENGE: Write a function that takes in 3 strings, performs a-b+c arithmetic, and returns a top-ten result
